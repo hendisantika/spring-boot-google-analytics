@@ -1,0 +1,39 @@
+services:
+  postgres:
+    image: postgres:17.5
+    container_name: spring-boot-postgres
+    environment:
+      POSTGRES_DB: productdb
+      POSTGRES_USER: yu71
+      POSTGRES_PASSWORD: 53cret
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U admin -d productdb" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+#  app:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    container_name: spring-boot-app
+#    depends_on:
+#      postgres:
+#        condition: service_healthy
+#    ports:
+#      - "8080:8080"
+#    environment:
+#      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/productdb
+#      SPRING_DATASOURCE_USERNAME: admin
+#      SPRING_DATASOURCE_PASSWORD: password123
+#      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+#      SPRING_JPA_SHOW_SQL: true
+#    volumes:
+#      - ./logs:/app/logs
+
+volumes:
+  postgres_data:
