@@ -1,5 +1,10 @@
 # Spring Boot Product CRUD with Google Analytics 4 Integration
 
+[![Java CI with Maven](https://github.com/hendisantika/spring-boot-google-analytics/actions/workflows/maven.yml/badge.svg)](https://github.com/hendisantika/spring-boot-google-analytics/actions/workflows/maven.yml)
+[![Dependabot](https://img.shields.io/badge/dependabot-enabled-025E8C?logo=dependabot)](.github/dependabot.yml)
+![Java](https://img.shields.io/badge/Java-25-orange?logo=openjdk)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1.1-6DB33F?logo=springboot)
+
 A comprehensive Spring Boot application that provides CRUD operations for products with PostgreSQL database support and
 Google Analytics 4 event tracking.
 
@@ -13,17 +18,20 @@ Google Analytics 4 event tracking.
 - **Pagination**: Support for paginated product listings
 - **Validation**: Input validation with Bean Validation
 - **Logging**: Comprehensive logging throughout the application
+- **CI/CD**: GitHub Actions build & test on JDK 25 with a PostgreSQL service container
+- **Automated Dependency Updates**: Grouped Dependabot PRs for Maven, GitHub Actions and Docker
 
 ## Tech Stack
 
-- Java 21
-- Spring Boot 3.5.5
+- Java 25 (Eclipse Temurin)
+- Spring Boot 4.1.1
 - Spring Data JPA
 - PostgreSQL 17.5
 - Docker & Docker Compose
 - Google Analytics 4 API
 - Lombok
 - Maven
+- GitHub Actions & Dependabot
 
 ## Project Structure
 
@@ -45,6 +53,10 @@ src/
 │   │   └── SpringBootGoogleAnalyticsApplication.java
 │   └── resources/
 │       └── application.properties
+├── .github/
+│   ├── dependabot.yml
+│   └── workflows/
+│       └── maven.yml
 ├── docker-compose.yml
 ├── Dockerfile
 └── pom.xml
@@ -52,8 +64,8 @@ src/
 
 ## Prerequisites
 
-- Java 21
-- Maven 3.6+
+- Java 25 (JDK 25)
+- Maven 3.9+ (or use the bundled `./mvnw`)
 - Docker and Docker Compose
 - Google Analytics 4 property (optional)
 
@@ -62,9 +74,9 @@ src/
 ### 1. Clone and Build
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/hendisantika/spring-boot-google-analytics.git
 cd spring-boot-google-analytics
-mvn clean package -DskipTests
+./mvnw clean package -DskipTests
 ```
 
 ### 2. Run with Docker Compose
@@ -73,10 +85,11 @@ mvn clean package -DskipTests
 docker-compose up -d
 ```
 
-This will start:
+This starts PostgreSQL 17.5 on port 5432. The `app` service in `docker-compose.yml` is commented out by default;
+uncomment it to also run the application container (built from `eclipse-temurin:25-jre`) on port 8080.
 
-- PostgreSQL 17.5 on port 5432
-- Spring Boot application on port 8080
+> **Note:** `application.properties` defaults to `jdbc:postgresql://localhost:5433/productdb`. When using the Compose
+> database on port 5432, set `SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/productdb`.
 
 ### 3. Access the Application
 
@@ -123,9 +136,9 @@ The API will be available at: `http://localhost:8080/api/products`
 The application uses PostgreSQL with the following default settings:
 
 - Database: `productdb`
-- Username: `admin`
-- Password: `password123`
-- Port: `5432`
+- Username: `yu71`
+- Password: `53cret`
+- Port: `5433`
 
 ### Google Analytics 4 Configuration
 
@@ -142,9 +155,9 @@ google.analytics.credentials-path=/path/to/credentials.json
 |------------------------------|------------------------------|--------------------------------------------|
 | `GA_PROPERTY_ID`             | Google Analytics Property ID | -                                          |
 | `GA_CREDENTIALS_PATH`        | Path to GA4 credentials file | -                                          |
-| `SPRING_DATASOURCE_URL`      | Database URL                 | jdbc:postgresql://localhost:5432/productdb |
-| `SPRING_DATASOURCE_USERNAME` | Database username            | admin                                      |
-| `SPRING_DATASOURCE_PASSWORD` | Database password            | password123                                |
+| `SPRING_DATASOURCE_URL`      | Database URL                 | jdbc:postgresql://localhost:5433/productdb |
+| `SPRING_DATASOURCE_USERNAME` | Database username            | yu71                                       |
+| `SPRING_DATASOURCE_PASSWORD` | Database password            | 53cret                                     |
 
 ## Google Analytics 4 Events
 
@@ -170,8 +183,20 @@ The application tracks the following events:
 
 2. Run the application:
    ```bash
-   mvn spring-boot:run
+   ./mvnw spring-boot:run
    ```
+
+### Running Tests
+
+`SpringBootGoogleAnalyticsApplicationTests` loads the full Spring context, so a PostgreSQL instance must be reachable:
+
+```bash
+docker run -d --rm --name ga-pg-test \
+  -e POSTGRES_DB=productdb -e POSTGRES_USER=yu71 -e POSTGRES_PASSWORD=53cret \
+  -p 5433:5432 postgres:17.5
+
+./mvnw test
+```
 
 ### Testing the API
 
@@ -190,6 +215,26 @@ curl "http://localhost:8080/api/products/search?name=Test"
 # Get paginated products
 curl "http://localhost:8080/api/products/paginated?page=0&size=5&sortBy=name&sortDir=asc"
 ```
+
+## Continuous Integration
+
+The [Java CI with Maven](.github/workflows/maven.yml) workflow runs on every push and pull request to `main`:
+
+- Sets up **JDK 25** (Temurin) with Maven dependency caching
+- Starts a **PostgreSQL 17.5** service container (`localhost:5433`) for the Spring context test
+- Runs `mvn -B package` (compile + test + package)
+- Submits the Maven dependency graph to GitHub on pushes to `main` (improves Dependabot alerts)
+
+## Dependency Management
+
+[Dependabot](.github/dependabot.yml) keeps dependencies up to date:
+
+| Ecosystem      | Schedule              | Grouping                                                    | Commit prefix   |
+|----------------|-----------------------|-------------------------------------------------------------|-----------------|
+| Maven          | Daily, 05:00 WIB      | `spring-boot`, `google`, other minor/patch updates          | `build(deps)`   |
+| GitHub Actions | Daily, 05:00 WIB      | All actions in one PR                                       | `ci(deps)`      |
+| Docker         | Weekly (Mon), 05:00   | Major `eclipse-temurin` bumps ignored (stay on JDK 25 LTS)  | `build(docker)` |
+| Docker Compose | Weekly (Mon), 05:00   | -                                                           | `build(docker)` |
 
 ## Docker Commands
 
