@@ -1,5 +1,6 @@
 version: 2
 updates:
+  # Maven dependencies (pom.xml)
   - package-ecosystem: maven
     directory: "/"
     schedule:
@@ -7,6 +8,31 @@ updates:
       time: '05:00'
       timezone: Asia/Jakarta
     open-pull-requests-limit: 10
+    target-branch: main
+    labels:
+      - dependencies
+      - java
+    commit-message:
+      prefix: "build(deps)"
+      prefix-development: "build(deps-dev)"
+      include: scope
+    groups:
+      spring-boot:
+        patterns:
+          - "org.springframework.boot*"
+          - "org.springframework*"
+      google:
+        patterns:
+          - "com.google*"
+      maven-minor-patch:
+        update-types:
+          - minor
+          - patch
+        exclude-patterns:
+          - "org.springframework*"
+          - "com.google*"
+
+  # GitHub Actions used in .github/workflows
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -14,3 +40,52 @@ updates:
       time: '05:00'
       timezone: Asia/Jakarta
     open-pull-requests-limit: 10
+    target-branch: main
+    labels:
+      - dependencies
+      - github_actions
+    commit-message:
+      prefix: "ci(deps)"
+      include: scope
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+
+  # Docker base image (Dockerfile)
+  - package-ecosystem: docker
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: '05:00'
+      timezone: Asia/Jakarta
+    open-pull-requests-limit: 5
+    target-branch: main
+    labels:
+      - dependencies
+      - docker
+    commit-message:
+      prefix: "build(docker)"
+      include: scope
+    ignore:
+      # Stay on the JDK 25 LTS line; bump major Java versions deliberately
+      - dependency-name: "eclipse-temurin"
+        update-types: [ "version-update:semver-major" ]
+
+  # Docker Compose services (docker-compose.yml)
+  - package-ecosystem: docker-compose
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: '05:00'
+      timezone: Asia/Jakarta
+    open-pull-requests-limit: 5
+    target-branch: main
+    labels:
+      - dependencies
+      - docker
+    commit-message:
+      prefix: "build(docker)"
+      include: scope
