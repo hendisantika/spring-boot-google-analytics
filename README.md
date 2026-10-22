@@ -233,8 +233,8 @@ The [Java CI with Maven](.github/workflows/maven.yml) workflow runs on every pus
 |----------------|-----------------------|-------------------------------------------------------------|-----------------|
 | Maven          | Daily, 05:00 WIB      | `spring-boot`, `google`, other minor/patch updates          | `build(deps)`   |
 | GitHub Actions | Daily, 05:00 WIB      | All actions in one PR                                       | `ci(deps)`      |
-| Docker         | Weekly (Mon), 05:00   | Major `eclipse-temurin` bumps ignored (stay on JDK 25 LTS)  | `build(docker)` |
-| Docker Compose | Weekly (Mon), 05:00   | -                                                           | `build(docker)` |
+| Docker         | Weekly (Mon), 05:00   | Major `eclipse-temurin` bumps ignored (stay on JDK 25 LTS)  | `build(deps)`   |
+| Docker Compose | Weekly (Mon), 05:00   | -                                                           | `build(deps)`   |
 
 ## Docker Commands
 
